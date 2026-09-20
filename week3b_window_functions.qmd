@@ -1,0 +1,134 @@
+---
+title: "Week3B_window_functions"
+author: "Sarah Abdelrahman"
+format: html
+editor: visual
+---
+
+## DATA 607 — Data Acquisition & Management
+
+**M.S. in Data Science \| CUNY School of Professional Studies**
+
+**Student:** Sarah Abdelrahman\
+**Instructor:** Professor Darwin Gomez
+
+------------------------------------------------------------------------
+
+# Introduction
+
+For this assignment, I will use a time-series dataset containing daily stock prices for two companies: Apple (`AAPL`) and Microsoft (`MSFT`).
+
+The dataset includes the date, stock symbol, and daily closing price.
+
+I will use R and `dplyr` window functions to calculate the year-to-date average closing price and the six-day moving average for each stock.
+
+# Setup
+
+First, I loaded the `dplyr` package.
+
+```         
+library(dplyr)
+```
+
+# Create the Dataset
+
+I created a time-series dataset containing daily closing prices for Apple and Microsoft.
+
+```         
+stock_data <- data.frame(
+  date = rep(as.Date("2026-01-01") + 0:11, 2),
+  
+  symbol = c(
+    rep("AAPL", 12),
+    rep("MSFT", 12)
+  ),
+  
+  close = c(
+    243.85, 245.10, 242.75, 246.20,
+    248.60, 247.90, 250.15, 251.40,
+    249.80, 252.10, 254.35, 253.60,
+    
+    421.30, 423.15, 420.85, 425.40,
+    427.20, 426.75, 429.10, 431.50,
+    430.20, 433.60, 435.15, 434.50
+  )
+)
+
+stock_data
+```
+
+# Organize the Data
+
+I organized the data by stock symbol and date so that each company can be analyzed separately.
+
+```         
+stock_data <- stock_data |>
+  arrange(symbol, date)
+
+stock_data
+```
+
+# Year-to-Date Average
+
+Next, I grouped the data by stock symbol and calculated the year-to-date average closing price.
+
+The `cummean()` function calculates the cumulative average from the beginning of the data through each date.
+
+```         
+stock_results <- stock_data |>
+  group_by(symbol) |>
+  arrange(date, .by_group = TRUE) |>
+  mutate(
+    ytd_average = cummean(close)
+  )
+
+stock_results
+```
+
+# Six-Day Moving Average
+
+Next, I calculated the six-day moving average for each stock.
+
+The calculation uses the current day's closing price together with the previous five days.
+
+```         
+stock_results <- stock_results |>
+  mutate(
+    six_day_moving_average = (
+      close +
+      lag(close, 1) +
+      lag(close, 2) +
+      lag(close, 3) +
+      lag(close, 4) +
+      lag(close, 5)
+    ) / 6
+  ) |>
+  ungroup()
+
+stock_results
+```
+
+# Final Results
+
+The final results show the date, stock symbol, daily closing price, year-to-date average, and six-day moving average.
+
+```         
+stock_results |>
+  select(
+    date,
+    symbol,
+    close,
+    ytd_average,
+    six_day_moving_average
+  )
+```
+
+# Conclusion
+
+In this assignment, I used time-series stock data for Apple and Microsoft.
+
+I organized the data by stock symbol and date and used `dplyr` window functions to analyze each stock separately.
+
+I used `cummean()` to calculate the year-to-date average closing price.
+
+I also calculated the six-day moving average using the current day's closing price and the previous five days.
